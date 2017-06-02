@@ -62,6 +62,7 @@
     <Compile Include="LeakCheckSafeHandle.cs" />
     <Compile Include="GtkConstructors.cs" />
     <Compile Include="Helpers.cs" />
+    <Compile Include="HackFixify.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\xwt\Xwt\Xwt.csproj">

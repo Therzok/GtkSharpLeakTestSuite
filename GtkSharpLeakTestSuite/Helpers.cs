@@ -13,7 +13,7 @@ namespace GtkSharpLeakTestSuite
 			{
 				if (!type.IsSubclassOf(t))
 					continue;
-				
+
 				var ctorInfos = type.GetConstructors();
 				foreach (var ctorInfo in ctorInfos)
 				{

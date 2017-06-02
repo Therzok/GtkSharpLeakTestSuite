@@ -22,14 +22,15 @@ namespace GtkSharpLeakTestSuite
 					mappedGtkObjectConstructors[ctor] = false;
 		}
 
-		static HashSet<ConstructorInfo> skippedConstructors = new HashSet<ConstructorInfo>();
 		static Func<GLib.Object> CreateWrapper (ConstructorInfo info, params object[] values)
 		{
 			return new Func<GLib.Object>(() =>
 			{
 				try
 				{
-					return (GLib.Object)info.Invoke(values);
+					if (HackFixify.Skip(info))
+						return null;
+					return HackFixify.Fixify(info.Invoke(values));
 				}
 				catch (Exception ex)
 				{
@@ -63,8 +64,8 @@ namespace GtkSharpLeakTestSuite
 			foreach (var ctor in GetDefaultConstructors())
 				yield return ctor;
 
-			//foreach (var ctor in GetOneParameterConstructors("test"))
-			//	yield return ctor;
+			foreach (var ctor in GetOneParameterConstructors("test"))
+				yield return ctor;
 		}
 
 		public static IEnumerable<(ConstructorInfo ctor, Exception ex)> GetFailures ()
