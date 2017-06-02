@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Gtk;
 
 namespace GtkSharpLeakTestSuite
@@ -22,7 +23,7 @@ namespace GtkSharpLeakTestSuite
 			GC.WaitForPendingFinalizers();
 
 			foreach (var item in LeakCheckSafeHandle.alive) {
-				Console.WriteLine("Leaked {0} from:\n {1}", item.Key, item.Value);
+				System.Diagnostics.Debugger.Break();
 			}
 		}
 
@@ -35,7 +36,17 @@ namespace GtkSharpLeakTestSuite
 
 		static void CreateObjectsGtk()
 		{
-			new Gtk.Button().Destroy();
+			foreach (var ctor in GtkConstructors.GetConstructors()) {
+				GLib.Object obj = ctor.Invoke();
+				// Constructor threw an exception, i.e. Gtk.Builder
+				if (obj == null)
+					continue;
+				
+				if (obj is Gtk.Object gtk)
+					gtk.Destroy();
+				else
+					obj.Dispose();
+			}
 		}
 
 		static void CreateObjectsXwt()

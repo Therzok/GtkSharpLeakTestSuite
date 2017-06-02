@@ -60,6 +60,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="LeakCheckSafeHandle.cs" />
+    <Compile Include="GtkConstructors.cs" />
+    <Compile Include="Helpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\xwt\Xwt\Xwt.csproj">
