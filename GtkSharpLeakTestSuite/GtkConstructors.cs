@@ -19,18 +19,21 @@ namespace GtkSharpLeakTestSuite
 
 			foreach (var asm in assemblies)
 				foreach (var ctor in Helpers.GetAllConstructors(asm, typeof(GLib.Object)))
-					mappedGtkObjectConstructors[ctor] = false;
+					unmappedConstructors[ctor] = true;
+
+			foreach (var ctor in Helpers.GetAllConstructors(typeof(Xwt.Application).Assembly, typeof(Xwt.XwtComponent)))
+				unmappedConstructors[ctor] = true;
 		}
 
-		static Func<GLib.Object> CreateWrapper (ConstructorInfo info, params object[] values)
+		static Func<T> CreateWrapper<T> (ConstructorInfo info, params object[] values) where T:class
 		{
-			return new Func<GLib.Object>(() =>
+			return new Func<T>(() =>
 			{
 				try
 				{
 					if (HackFixify.Skip(info))
 						return null;
-					return HackFixify.Fixify(info.Invoke(values));
+					return HackFixify.Fixify<T>(info.Invoke(values));
 				}
 				catch (Exception ex)
 				{
@@ -41,31 +44,37 @@ namespace GtkSharpLeakTestSuite
 		}
 
 		static readonly Dictionary<ConstructorInfo, Exception> failedConstructors = new Dictionary<ConstructorInfo, Exception>();
-		static readonly Dictionary<ConstructorInfo, bool> mappedGtkObjectConstructors = new Dictionary<ConstructorInfo, bool>();
+		static readonly Dictionary<ConstructorInfo, bool> unmappedConstructors = new Dictionary<ConstructorInfo, bool>();
 
-		static IEnumerable<Func<GLib.Object>> GetDefaultConstructors ()
+		static IEnumerable<Func<T>> GetDefaultConstructors<T> () where T:class
 		{
 			return Helpers.Mark (
-				Helpers.GetDefaultConstructors(mappedGtkObjectConstructors, typeof(GLib.Object)),
-				mappedGtkObjectConstructors,
-				info => CreateWrapper(info, null));
+				Helpers.GetDefaultConstructors(unmappedConstructors, typeof(T)),
+				unmappedConstructors,
+				info => CreateWrapper<T>(info, null));
 		}
 
-		static IEnumerable<Func<GLib.Object>> GetOneParameterConstructors<T>(T value)
+		static IEnumerable<Func<T>> GetOneParameterConstructors<T, TValue>(TValue value) where T:class
 		{
 			return Helpers.Mark(
-				Helpers.GetOneParameterConstructors(mappedGtkObjectConstructors, typeof(GLib.Object), typeof(T)),
-				mappedGtkObjectConstructors,
-				info => CreateWrapper(info, value));
+				Helpers.GetOneParameterConstructors(unmappedConstructors, typeof(T), typeof(TValue)),
+				unmappedConstructors,
+				info => CreateWrapper<T>(info, value));
 		}
 
-		public static IEnumerable<Func<GLib.Object>> GetConstructors()
+		public static IEnumerable<Func<T>> GetConstructors<T>() where T:class
 		{
-			foreach (var ctor in GetDefaultConstructors())
+			foreach (var ctor in GetDefaultConstructors<T>())
 				yield return ctor;
 
-			foreach (var ctor in GetOneParameterConstructors("test"))
+			foreach (var ctor in GetOneParameterConstructors<T, string>("test"))
 				yield return ctor;
+		}
+
+		public static IEnumerable<ConstructorInfo> GetUnmappedConstructors()
+		{
+			foreach (var item in unmappedConstructors)
+				yield return item.Key;
 		}
 
 		public static IEnumerable<(ConstructorInfo ctor, Exception ex)> GetFailures ()

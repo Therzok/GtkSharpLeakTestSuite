@@ -62,5 +62,10 @@ namespace GtkSharpLeakTestSuite
 				yield return transform (ctor);
 			}
 		}
+
+		public static string PrettyPrint (this ConstructorInfo info)
+		{
+			return string.Format("{0}.{1}", info.DeclaringType, info);
+		}
 	}
 }

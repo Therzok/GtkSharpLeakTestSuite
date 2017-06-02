@@ -12,14 +12,17 @@ namespace GtkSharpLeakTestSuite
 
 			// It expects a filename, probably do smarter heuristics on what parameter to pass.
 			if (name == "Gtk.StatusIcon" && par.Length == 1 && par[0].ParameterType == typeof(string))
+			{
+				Console.WriteLine("Skipped {0} - native crash on destroy", info.PrettyPrint());
 				return true;
+			}
 
 			return false;
 		}
 
-		public static GLib.Object Fixify (object arg)
+		public static T Fixify<T> (object arg)
 		{
-			return (GLib.Object)arg;
+			return (T)arg;
 		}
 	}
 }

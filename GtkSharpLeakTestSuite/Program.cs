@@ -28,8 +28,11 @@ namespace GtkSharpLeakTestSuite
 				System.Diagnostics.Debugger.Break();
 			}
 
+			foreach (var item in GtkConstructors.GetUnmappedConstructors())
+				Console.WriteLine("Unmapped {0}", item.PrettyPrint());
+
 			foreach (var item in GtkConstructors.GetFailures()) {
-				Console.WriteLine("Failed {0}.{1}", item.ctor.DeclaringType, item.ctor.ToString());
+				Console.WriteLine("Failed {0}", item.ctor.PrettyPrint());
 				if (verbose)
 					Console.WriteLine(item.ex);
 			}
@@ -44,7 +47,7 @@ namespace GtkSharpLeakTestSuite
 
 		static void CreateObjectsGtk()
 		{
-			foreach (var ctor in GtkConstructors.GetConstructors()) {
+			foreach (var ctor in GtkConstructors.GetConstructors<GLib.Object>()) {
 				GLib.Object obj = ctor.Invoke();
 				// Constructor threw an exception, i.e. Gtk.Builder
 				if (obj == null)
@@ -61,7 +64,15 @@ namespace GtkSharpLeakTestSuite
 
 		static void CreateObjectsXwt()
 		{
-			new Xwt.Button().Dispose();
+			foreach (var ctor in GtkConstructors.GetConstructors<Xwt.XwtComponent>())
+			{
+				Xwt.XwtComponent obj = ctor.Invoke();
+				// Constructor threw an exception, i.e. Gtk.Builder
+				if (obj == null)
+					continue;
+
+				obj.Dispose();
+			}
 		}
 	}
 }
