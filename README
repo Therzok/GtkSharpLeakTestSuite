@@ -1,0 +1,5 @@
+HOWTO:
+* Clone github.com:mono/xwt side-by-sde
+* Grab the latest gtk-sharp-2-12-branch, and use ./bootstrap-2.12-debug-safehandles as the configuration
+* make && gac the gtk# assemblies
+* Run this test app
