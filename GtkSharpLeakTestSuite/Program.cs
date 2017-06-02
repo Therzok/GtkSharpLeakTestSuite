@@ -6,12 +6,14 @@ namespace GtkSharpLeakTestSuite
 {
 	class MainClass
 	{
+		const bool debug = false;
 		const bool verbose = false;
 
 		public static void Main(string[] args)
 		{
 			Xwt.Application.Initialize(Xwt.ToolkitType.Gtk);
-			GLib.SafeObjectHandle.InternalCreateHandle = (arg) => new LeakCheckSafeHandle (arg);
+			var field = typeof(GLib.SafeObjectHandle).GetField("InternalCreateHandle", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+			field.SetValue(null, new Func<IntPtr, GLib.SafeObjectHandle> (arg => new LeakCheckSafeHandle(arg));
 
 			Application.Init();
 			CreateObjectsGtk();
@@ -25,16 +27,21 @@ namespace GtkSharpLeakTestSuite
 			GC.WaitForPendingFinalizers();
 
 			foreach (var item in LeakCheckSafeHandle.alive) {
-				System.Diagnostics.Debugger.Break();
+				Console.WriteLine("!!!!!!!!!!!!!!!!!!!!LEAK!!!!!!!!!!!!!!!!!!!!");
+				Console.WriteLine(item.Value);
+				Console.WriteLine("============================================");
 			}
 
-			foreach (var item in GtkConstructors.GetUnmappedConstructors())
-				Console.WriteLine("Unmapped {0}", item.PrettyPrint());
+			if (debug) {
+				foreach (var item in GtkConstructors.GetUnmappedConstructors())
+					Console.WriteLine("Unmapped {0}", item.PrettyPrint());
 
-			foreach (var item in GtkConstructors.GetFailures()) {
-				Console.WriteLine("Failed {0}", item.ctor.PrettyPrint());
-				if (verbose)
-					Console.WriteLine(item.ex);
+				foreach (var item in GtkConstructors.GetFailures())
+				{
+					Console.WriteLine("Failed {0}", item.ctor.PrettyPrint());
+					if (verbose)
+						Console.WriteLine(item.ex);
+				}
 			}
 		}
 
