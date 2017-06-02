@@ -18,7 +18,7 @@ namespace GtkSharpLeakTestSuite
 			};
 
 			foreach (var asm in assemblies)
-				foreach (var ctor in Helpers.GetAllConstructors(typeof(Gtk.Object).Assembly, typeof(GLib.Object)))
+				foreach (var ctor in Helpers.GetAllConstructors(asm, typeof(GLib.Object)))
 					mappedGtkObjectConstructors[ctor] = false;
 		}
 
@@ -65,6 +65,12 @@ namespace GtkSharpLeakTestSuite
 
 			//foreach (var ctor in GetOneParameterConstructors("test"))
 			//	yield return ctor;
+		}
+
+		public static IEnumerable<(ConstructorInfo ctor, Exception ex)> GetFailures ()
+		{
+			foreach (var item in failedConstructors)
+				yield return (item.Key, item.Value);
 		}
 	}
 }
