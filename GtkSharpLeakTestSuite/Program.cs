@@ -21,6 +21,8 @@ namespace GtkSharpLeakTestSuite
 
 			DoMain();
 
+			HackFixify.RemoveKnownStaticGtkInstances();
+
 			if (LeakCheckSafeHandle.alive.Count != 0)
 				Console.WriteLine("Found {0} leaks", LeakCheckSafeHandle.alive.Count.ToString());
 			
@@ -53,6 +55,7 @@ namespace GtkSharpLeakTestSuite
 			window.Destroy();
 		}
 
+		static int remainingEqualChangedCount = 5;
 		static bool HandleTimeoutHandler()
 		{
 			int value = LeakCheckSafeHandle.alive.Count;
@@ -66,9 +69,16 @@ namespace GtkSharpLeakTestSuite
 
 			bool changed = value != LeakCheckSafeHandle.alive.Count;
 			if (!changed)
+			{
+				remainingEqualChangedCount--;
+				if (remainingEqualChangedCount == 0)
+					return false;
 				wnd.Ready.Text = "Close the window to get results";
+			} else {
+				remainingEqualChangedCount = 5;
+			}
 
-			return value != LeakCheckSafeHandle.alive.Count;
+			return true;
 		}
 
 		static void CreateObjectsGtk()

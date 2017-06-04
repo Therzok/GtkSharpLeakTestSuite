@@ -24,5 +24,10 @@ namespace GtkSharpLeakTestSuite
 		{
 			return (T)arg;
 		}
+
+		public static void RemoveKnownStaticGtkInstances ()
+		{
+			LeakCheckSafeHandle.alive.Remove(Gdk.Keymap.Default.Handle);
+		}
 	}
 }
