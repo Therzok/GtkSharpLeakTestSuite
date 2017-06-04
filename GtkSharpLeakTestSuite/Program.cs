@@ -13,7 +13,7 @@ namespace GtkSharpLeakTestSuite
 		{
 			Xwt.Application.Initialize(Xwt.ToolkitType.Gtk);
 			var field = typeof(GLib.SafeObjectHandle).GetField("InternalCreateHandle", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-			field.SetValue(null, new Func<IntPtr, GLib.SafeObjectHandle> (arg => new LeakCheckSafeHandle(arg));
+			field.SetValue(null, new Func<IntPtr, GLib.SafeObjectHandle> (arg => new LeakCheckSafeHandle(arg)));
 
 			Application.Init();
 			CreateObjectsGtk();
@@ -48,6 +48,8 @@ namespace GtkSharpLeakTestSuite
 		static void DoMain()
 		{
 			var window = new MainWindow();
+			window.Show();
+			window.Present();
 			Application.Run();
 			window.Destroy();
 		}

@@ -11,7 +11,7 @@ public partial class MainWindow
 		// Widget MainWindow
 		this.Name = "MainWindow";
 		this.Title = global::Mono.Unix.Catalog.GetString("MainWindow");
-		this.WindowPosition = ((global::Gtk.WindowPosition)(4));
+		this.WindowPosition = ((global::Gtk.WindowPosition)(3));
 		// Container child MainWindow.Gtk.Container+ContainerChild
 		this.label1 = new global::Gtk.Label();
 		this.label1.Name = "label1";
