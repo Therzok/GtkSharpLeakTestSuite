@@ -14,9 +14,9 @@
     <property name="WindowPosition">CenterAlways</property>
     <signal name="DeleteEvent" handler="OnDeleteEvent" />
     <child>
-      <widget class="Gtk.Label" id="label1">
-        <property name="MemberName" />
-        <property name="LabelProp" translatable="yes">Close me to debug leaks</property>
+      <widget class="Gtk.Label" id="ReadyLabel">
+        <property name="MemberName">ReadyLabel</property>
+        <property name="LabelProp" translatable="yes">Please wait...</property>
       </widget>
     </child>
   </widget>

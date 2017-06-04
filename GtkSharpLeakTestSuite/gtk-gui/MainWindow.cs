@@ -3,7 +3,7 @@
 
 public partial class MainWindow
 {
-	private global::Gtk.Label label1;
+	private global::Gtk.Label ReadyLabel;
 
 	protected virtual void Build()
 	{
@@ -13,10 +13,10 @@ public partial class MainWindow
 		this.Title = global::Mono.Unix.Catalog.GetString("MainWindow");
 		this.WindowPosition = ((global::Gtk.WindowPosition)(3));
 		// Container child MainWindow.Gtk.Container+ContainerChild
-		this.label1 = new global::Gtk.Label();
-		this.label1.Name = "label1";
-		this.label1.LabelProp = global::Mono.Unix.Catalog.GetString("Close me to debug leaks");
-		this.Add(this.label1);
+		this.ReadyLabel = new global::Gtk.Label();
+		this.ReadyLabel.Name = "ReadyLabel";
+		this.ReadyLabel.LabelProp = global::Mono.Unix.Catalog.GetString("Please wait...");
+		this.Add(this.ReadyLabel);
 		if ((this.Child != null))
 		{
 			this.Child.ShowAll();

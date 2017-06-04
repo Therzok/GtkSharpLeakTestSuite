@@ -21,11 +21,9 @@ namespace GtkSharpLeakTestSuite
 
 			DoMain();
 
-			GC.Collect();
-			GC.Collect(); 
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
+			if (LeakCheckSafeHandle.alive.Count != 0)
+				Console.WriteLine("Found {0} leaks", LeakCheckSafeHandle.alive.Count.ToString());
+			
 			foreach (var item in LeakCheckSafeHandle.alive) {
 				Console.WriteLine("!!!!!!!!!!!!!!!!!!!!LEAK!!!!!!!!!!!!!!!!!!!!");
 				Console.WriteLine(item.Value);
@@ -50,8 +48,27 @@ namespace GtkSharpLeakTestSuite
 			var window = new MainWindow();
 			window.Show();
 			window.Present();
+			GLib.Timeout.Add(100, HandleTimeoutHandler);
 			Application.Run();
 			window.Destroy();
+		}
+
+		static bool HandleTimeoutHandler()
+		{
+			int value = LeakCheckSafeHandle.alive.Count;
+
+			var toplevels = Window.ListToplevels();
+			var wnd = (MainWindow)toplevels[0];
+			GC.Collect();
+			GC.Collect();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			bool changed = value != LeakCheckSafeHandle.alive.Count;
+			if (!changed)
+				wnd.Ready.Text = "Close the window to get results";
+
+			return value != LeakCheckSafeHandle.alive.Count;
 		}
 
 		static void CreateObjectsGtk()
