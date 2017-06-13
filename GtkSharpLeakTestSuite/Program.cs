@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Gtk;
 
 namespace GtkSharpLeakTestSuite
@@ -9,11 +11,28 @@ namespace GtkSharpLeakTestSuite
 		const bool debug = false;
 		const bool verbose = false;
 
+		internal static Dictionary<IntPtr, string> gobjectDict = new Dictionary<IntPtr, string>();
 		public static void Main(string[] args)
 		{
 			Xwt.Application.Initialize(Xwt.ToolkitType.Gtk);
-			var field = typeof(GLib.SafeObjectHandle).GetField("InternalCreateHandle", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
-			field.SetValue(null, new Func<IntPtr, GLib.SafeObjectHandle> (arg => new LeakCheckSafeHandle(arg)));
+
+			var type = typeof(GLib.Object).Assembly.GetType("GLib.PointerWrapper");
+			if (type == null)
+			{
+				return;
+			}
+
+			var field = type.GetField("ObjectCreated", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+			field.SetValue(null, new Action<IntPtr>(arg => {
+				lock (gobjectDict)
+					gobjectDict.Add(arg, Environment.StackTrace);
+			}));
+
+			field = type.GetField("ObjectDestroyed", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+			field.SetValue(null, new Action<IntPtr>(arg => {
+				lock (gobjectDict)
+					gobjectDict.Remove(arg);
+			}));
 
 			Application.Init();
 			CreateObjectsGtk();
@@ -23,10 +42,10 @@ namespace GtkSharpLeakTestSuite
 
 			HackFixify.RemoveKnownStaticGtkInstances();
 
-			if (LeakCheckSafeHandle.alive.Count != 0)
-				Console.WriteLine("Found {0} leaks", LeakCheckSafeHandle.alive.Count.ToString());
+			if (gobjectDict.Count != 0)
+				Console.WriteLine("Found {0} leaks", gobjectDict.Count.ToString());
 			
-			foreach (var item in LeakCheckSafeHandle.alive) {
+			foreach (var item in gobjectDict) {
 				Console.WriteLine("!!!!!!!!!!!!!!!!!!!!LEAK!!!!!!!!!!!!!!!!!!!!");
 				Console.WriteLine(item.Value);
 				Console.WriteLine("============================================");
@@ -58,16 +77,21 @@ namespace GtkSharpLeakTestSuite
 		static int remainingEqualChangedCount = 5;
 		static bool HandleTimeoutHandler()
 		{
-			int value = LeakCheckSafeHandle.alive.Count;
+			int value;
+			lock (gobjectDict)
+				value = gobjectDict.Count;
 
 			var toplevels = Window.ListToplevels();
-			var wnd = (MainWindow)toplevels[0];
+			var wnd = toplevels.OfType<MainWindow> ().Single();
 			GC.Collect();
 			GC.Collect();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
-			bool changed = value != LeakCheckSafeHandle.alive.Count;
+			int newValue;
+			lock (gobjectDict)
+				newValue = gobjectDict.Count;
+			bool changed = value != newValue;
 			if (!changed)
 			{
 				remainingEqualChangedCount--;

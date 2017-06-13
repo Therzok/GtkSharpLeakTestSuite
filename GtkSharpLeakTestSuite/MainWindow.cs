@@ -1,5 +1,6 @@
 ﻿using System;
 using Gtk;
+using GtkSharpLeakTestSuite;
 
 public partial class MainWindow : Gtk.Window
 {
@@ -15,8 +16,8 @@ public partial class MainWindow : Gtk.Window
 		Application.Quit();
 
 		// Force remove these to ensure we don't report them as leaked.
-		GtkSharpLeakTestSuite.LeakCheckSafeHandle.alive.Remove(Handle);
-		GtkSharpLeakTestSuite.LeakCheckSafeHandle.alive.Remove(ReadyLabel.Handle);
+		MainClass.gobjectDict.Remove(Handle);
+		MainClass.gobjectDict.Remove(ReadyLabel.Handle);
 		a.RetVal = true;
 	}
 }
