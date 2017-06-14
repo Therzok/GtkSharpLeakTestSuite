@@ -28,7 +28,8 @@ namespace GtkSharpLeakTestSuite
 		public static void RemoveKnownStaticGtkInstances ()
 		{
 			MainClass.gobjectDict.Remove(Gdk.Keymap.Default.Handle);
-			MainClass.gobjectDict.Remove(Gdk.Screen.Default.RgbaColormap.Handle);
+			if (Gdk.Screen.Default.RgbaColormap != null)
+				MainClass.gobjectDict.Remove (Gdk.Screen.Default.RgbaColormap.Handle);
 		}
 	}
 }
