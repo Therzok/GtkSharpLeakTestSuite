@@ -10,6 +10,7 @@ namespace GtkSharpLeakTestSuite
 	{
 		const bool debug = false;
 		const bool verbose = false;
+		const bool profile = false;
 
 		internal static Dictionary<IntPtr, string> gobjectDict = new Dictionary<IntPtr, string>();
 		public static void Main(string[] args)
@@ -62,6 +63,9 @@ namespace GtkSharpLeakTestSuite
 						Console.WriteLine(item.ex);
 				}
 			}
+
+			if (profile)
+				System.Threading.Thread.Sleep(10000);
 		}
 
 		static void DoMain()
